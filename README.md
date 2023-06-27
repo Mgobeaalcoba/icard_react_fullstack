@@ -1,3 +1,7 @@
+## icard_react_fullstack
+
+### The frontend of a fullstack project: a program for restaurant management
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
