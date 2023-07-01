@@ -349,5 +349,218 @@ export function ClientLayout(props) {
 8. Con esto ya tenemos un componente React de tipo ClientLayout() funcional que nos permitirá, al envolver nuestra app en este componente poder usar el mismo:
 
 ```js
+import React from "react";
+// import { Button } from "semantic-ui-react";
+import { Navigation } from "./routes";
 
+// importo mi ClientLayout para envolver mi app con el mismo
+import { ClientLayout } from "./layouts";
+
+export default function App() {
+  return (
+    <ClientLayout className="app">
+      <h1 className="app__title">Hola Mundo</h1>
+      <Navigation />
+    </ClientLayout>
+  );
+}
 ```
+
+9. Exactamente la misma estructura de layout le vamos a dar al lado del Admin del restaurante. Nos debería quedar un arbol así:
+
+```bash
+10:02:25 👽 with 🤖 mgobea 🐶 in icard_react_fullstack/src/layouts is 📦 0.1.0 via ⬢ v18.12.1 …
+➜ tree
+.
+├── AdminLayout
+│   ├── AdminLayout.js
+│   ├── AdminLayout.scss
+│   └── index.js
+├── ClientLayout
+│   ├── ClientLayout.js
+│   ├── ClientLayout.scss
+│   └── index.js
+└── index.js
+```
+
+10. Este sistema de layouts ahora debemos implementarlo con nuestro sistema de rutas...Y para eso necesitamos paginas o pages por lo que armaremos dentro de src un nuevo packages con este nombre "pages" y esta estructura:
+
+```bash
+10:08:40 👽 with 🤖 mgobea 🐶 in icard_react_fullstack/src/pages is 📦 0.1.0 via ⬢ v18.12.1 …
+➜ tree
+.
+├── Admin
+│   ├── LoginAdmin.js
+│   └── index.js
+├── Client
+│   ├── Home.js
+│   └── index.js
+├── Error404.js
+└── index.js
+
+2 directories, 6 files
+```
+
+Donde Home y LoginAdmin son dos pantallas. La primera es la Home del cliente y la segunda es la página de Login del administrador del restaurante. Los index.js como siempre nos sirven para poder exportar de forma sencilla los elementos del package
+
+Ya tenemos los Layouts, ya tenemos las pages, podemos comenzar a crear nuestro sistema de rutas no sin antes crear una pagina para manejar el error 404 del lado del cliente de una forma mas amigable... La misma vivirá entre la raiz de pages, es decir, por fuera de client y admin dado que podemos mostrarsela a ambos usuarios.
+
+Repasemos entonces la estructura de proyecto que debemos tener para poder comenzar a diseñar nuestro sistema de rutas. El mismo se diseña dentro de "src" y se debe ver así:
+
+```bash
+10:20:28 👽 with 🤖 mgobea 🐶 in icard_django_react/icard_react_fullstack/src is 📦 0.1.0 via ⬢ v18.12.1 …
+➜ tree
+.
+├── App.js
+├── index.js
+├── layouts
+│   ├── AdminLayout
+│   │   ├── AdminLayout.js
+│   │   ├── AdminLayout.scss
+│   │   └── index.js
+│   ├── ClientLayout
+│   │   ├── ClientLayout.js
+│   │   ├── ClientLayout.scss
+│   │   └── index.js
+│   └── index.js
+├── pages
+│   ├── Admin
+│   │   ├── LoginAdmin.js
+│   │   └── index.js
+│   ├── Client
+│   │   ├── Home.js
+│   │   └── index.js
+│   ├── Error404.js
+│   └── index.js
+├── reportWebVitals.js
+├── routes
+│   ├── Navigation.js
+│   ├── index.js
+│   ├── routes.admin.js
+│   ├── routes.client.js
+│   └── routes.js
+└── setupTests.js
+
+7 directories, 22 files
+```
+
+---
+
+## Creando sistema de rutas con React Router v6.
+
+Aclaración: aún se puede crear el sistema de rutas con React Router Dom v5, dado que no está deprecado. Pero es aconsejable trabajar con la versión 6. Por lo que vamos a crearlo directamente con la v6.
+
+1. Definir las rutas de la partes administradora. Recordemos que las mismas deben ir en routes.admin.js:
+
+```js
+// Gestionamos las rutas de la interface del admin del restaurante
+
+import { AdminLayout } from "../layouts";
+import { LoginAdmin } from "../pages";
+
+const routesAdmin = [
+  {
+    path: "/admin",
+    layout: AdminLayout,
+    component: LoginAdmin,
+  },
+];
+
+export default routesAdmin;
+```
+
+2. Hacemos lo propio con la parte del cliente que se encuentra en routes.client.js:
+
+```js
+// Gestionamos las rutas de la interface del cliente del restaurante.
+
+import { ClientLayout } from "../layouts";
+import { Home } from "../pages";
+
+const routesClient = [
+  {
+    path: "/",
+    layout: ClientLayout,
+    component: Home,
+  },
+];
+
+export default routesClient;
+```
+
+3. Ahora combinamos ambas rutas (cliente y admin) en nuestro archivo admin.js:
+
+```js
+// Archivo que va a gestionar las rutas
+// routes.admin.js y routes.client.js se van a combinar acá
+
+import routerAdmin from "./routes.admin";
+import routerClient from "./routes.client";
+
+// const routes = [routerAdmin, routerClient] // Devuelve un cada import un array de objetos que se guarda dentro de un nuevo array. El resultado es algo así como: [[{}],[{}]].
+
+const routes = [...routerAdmin, ...routerClient]; // Con los tres puntos adelante le estoy pidiendo solamente el contenido de mis arrays. Y no el array completo. Por lo que el resultado se verá como [{},{}] que es lo que buscabamos
+
+export default routes;
+```
+
+4. Finalmente llevamos nuestras rutas a Navigation.js para rendearlas luego así:
+
+```js
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import routes from "./routes";
+
+export function Navigation() {
+  console.log("routes -->", routes); // Devuelve por consola un array con todas las configuraciones de rutas que hemos dado de alta. Este array debemos recorrerlo para renderearlo. Para eso vamos a usar el paquete "lodash".
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<h2>Navigation...</h2>} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+5. Para renderear vamos a usar la extensión "lodash" la cual agregamos así:
+
+```bash
+yarn add lodash
+```
+
+6. Importamos "lodash" en Navigation.js y lo vamos a usar así:
+
+```js
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { map } from "lodash";
+import routes from "./routes";
+
+export function Navigation() {
+  console.log("routes -->", routes); // Devuelve por consola un array con todas las configuraciones de rutas que hemos dado de alta. Este array debemos recorrerlo para renderearlo. Para eso vamos a usar el paquete "lodash".
+  return (
+    <BrowserRouter>
+      <Routes>
+        {map(routes, (route, index) => (
+          <Route
+            key={index}
+            path={route.path}
+            element={
+              <route.layout>
+                <route.component />
+              </route.layout>
+            }
+          />
+        ))}
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+Con esto ya tendremos nuestro React Router V6 completamente configurado y podremos abrir en el navegador cada uno de nuestros dominios y ver como se renderiza el layout y las pages del lado del cliente y del lado del administrador!!!
+
+---
+
+## Ruta Error404
