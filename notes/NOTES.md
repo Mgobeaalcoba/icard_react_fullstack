@@ -563,4 +563,4 @@ Con esto ya tendremos nuestro React Router V6 completamente configurado y podrem
 
 ---
 
-## Ruta Error404
+## Ruta Error404.
